@@ -1,0 +1,18 @@
+vim: ft=hicolors
+*hicolors*
+Blue                Function            Scrollbar           AltUnique
+Comment             Green               Search              AltAltUnique
+Constant            Identifier          Special             VertSplit
+Cursor              Ignore              SpecialKey          Visual
+Cyan                IncSearch           Statement           VisualNOS
+Debug               LineNr              StatusLine          WarningMsg
+Delimiter           Magenta             StatusLineNC        White
+DiffAdd             Menu                String              WildMenu
+DiffChange          ModeMsg             Subtitle            Yellow
+DiffDelete          MoreMsg             Tags                lCursor
+DiffText            NonText             Title               AltConstant
+Directory           Normal              Todo                AltFunction
+Error               PreProc             Type                AltType
+ErrorMsg            Question            Underlined          User1
+FoldColumn          Red                 Unique              User2
+Folded

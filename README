@@ -1,0 +1,29 @@
+This is a mirror of http://www.vim.org/scripts/script.php?script_id=1081
+
+You'll get to see your colornames' colors and edit your colorscheme with the hicolors ftplugin/syntax/help files.  Leftclick on any colorname and you'll bring up the help page on that colorname (if any).
+
+To see an example, click on
+
+	http://mysite.verizon.net/astronaut/vim/colors/hicolors.html
+
+to see hicolors displaying the astronaut colorscheme (vimscript#122) color selections for the various highlighting groups.
+
+This script is auto-installable via GetLatestVimScripts, too (vimscript#642).
+
+Use it with vimscript#625 (colorscheme sampler) to see what highlighting groups are supported and what the colors will be.
+
+Bring up the colorscheme editor on each color by right-clicking on the color's name.  Use the mouse's left button to click and drag on the colorbars to select and change colors.  It works with both the gui and those console vims which support the mouse!  You can then write the colorscheme (you'll be prompted for a filename), cancel the change, or indicate that the change is done for that colorname.
+
+----------------------------------------------------------------------------------------
+USAGE
+
+    :help hicolors
+    <leftmouse>    on a colorname to bring up help on that colorname
+    <rightmouse>   on a colorname to bring up the colorscheme editor for that color
+      <leftmouse>  click&drag on any colorbar to change the color for that colorname
+      <leftmouse>  to select WriteColorscheme, Cancel, or Done
+
+----------------------------------------------------------------------------------------
+
+(alpha/beta version available at http://mysite.verizon.net/astronaut/vim/index.html#HICOLORS)
+
