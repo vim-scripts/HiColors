@@ -1,18 +1,19 @@
 vim: ft=hicolors
 *hicolors*
-Blue                Function            Scrollbar           AltUnique
-Comment             Green               Search              AltAltUnique
-Constant            Identifier          Special             VertSplit
-Cursor              Ignore              SpecialKey          Visual
-Cyan                IncSearch           Statement           VisualNOS
-Debug               LineNr              StatusLine          WarningMsg
-Delimiter           Magenta             StatusLineNC        White
-DiffAdd             Menu                String              WildMenu
-DiffChange          ModeMsg             Subtitle            Yellow
-DiffDelete          MoreMsg             Tags                lCursor
-DiffText            NonText             Title               AltConstant
-Directory           Normal              Todo                AltFunction
-Error               PreProc             Type                AltType
-ErrorMsg            Question            Underlined          User1
-FoldColumn          Red                 Unique              User2
-Folded
+AltAltUnique    DiffChange      lCursor         Search          Type
+AltConstant     DiffDelete      LineNr          SignColumn      Underlined
+AltFunction     DiffText        Magenta         Special         Unique
+AltType         Directory       Menu            SpecialKey      User1
+AltUnique       Error           ModeMsg         Statement       User2
+Blue            ErrorMsg        MoreMsg         StatusLine      VertSplit
+Comment         FoldColumn      NonText         StatusLineNC    Visual
+Constant        Folded          Normal          String          VisualNOS
+Cursor          Function        PreProc         Subtitle        WarningMsg
+Cyan            Green           Question        Tags            White
+Debug           Identifier      Red             Title           WildMenu
+Delimiter       Ignore          Scrollbar       Todo            Yellow
+DiffAdd         IncSearch
+
+    leftmouse : help for given colorname if any is available
+                use ctrl-o to return
+    rightmouse: brings up the color editor

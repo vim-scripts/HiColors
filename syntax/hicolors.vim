@@ -1,35 +1,49 @@
 " hicolors.vim:
 "   Author:	Charles E. Campbell, Jr.
-"   Date:	Sep 03, 2004
-"   Version:	3
+"   Date:	Oct 20, 2004
+"   Version:	4
 "  Usage:  :he hicolors
 " =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
 " GetLatestVimScripts: 1081 1 :AutoInstall: hicolors.vim
+"
+" History:
+"  v4: Sep 03, 2004 included SignColumn
+"  v3: Sep 03, 2004 first release
 
-if &cp || exists("g:loaded_hicolors")
+" ---------------------------------------------------------------------
+" Double-Loading handler: {{{1
+if &cp || exists("g:loaded_syntax_hicolors")
  finish
 endif
-let g:loaded_hicolors= "v3"
+let g:loaded_syntax_hicolors= "v4"
 
 " ---------------------------------------------------------------------
 "  HighlightColors: {{{1
 fun! s:HighlightColors()
-"  call Dfunc("HighlightColors()")
-  setlocal updatetime=100
+  let curline= line(".")
+  let curcol = col(".")
+  if curline < 3
+   let curline= 3
+  endif
+"  call Dfunc("HighlightColors() line=".curline." col=".curcol)
+  setlocal updatetime=200
+  set lz mouse+=n
   2
   norm! $
-  syn case match
-  syn clear
 
   " set up common syntax highlighting
+  syn case match
   syn clear
-  syn cluster hiColorGroup add=hiModeLine
+  syn cluster hiColorGroup add=hiModeLine,hiHelp
   syn region hiColorLine start='^' end='$' contains=@hiColorGroup
   syn region hiModeLine  start='^\s*vim:' end='$'
+  syn match hiHelp		"^\s*\zs\l.*$" contained
   hi link hiColorLine	Ignore
   hi link hiModeLine	Ignore
+  hi link hiHelp		Normal
 
-  " set up syntax highlighting for specific groups
+  " set up syntax highlighting for listed groups.
+  " Assumes that all colornames begin with a capital letter.
   while search('\<[A-Z]','W')
    let color= expand("<cword>")
 "   call Decho("color<".color.">")
@@ -42,10 +56,13 @@ fun! s:HighlightColors()
   nohlsearch
   3
   exe "norm! z\<cr>"
-  if !exists("s:hlc_ctr")
-   let s:hlc_ctr= 0
-  endif
-  let s:hlc_ctr= s:hlc_ctr + 1
+  call cursor(curline,curcol)
+  set nolz
+
+"  if !exists("s:hlc_ctr")	"Decho
+"   let s:hlc_ctr= 0	"Decho
+"  endif	"Decho
+"  let s:hlc_ctr= s:hlc_ctr + 1	"Decho
 "  call Dret("HighlightColors : ".s:hlc_ctr)
 endfun
 
@@ -75,7 +92,7 @@ endfun
 
 " ---------------------------------------------------------------------
 "  Autocmd: {{{1
-au CursorHold hicolors.txt call <SID>HighlightColors()
+au CursorHold hicolors.txt set lz|call <SID>HighlightColors()|set nolz
 
 " ---------------------------------------------------------------------
 " Initialize: {{{1
