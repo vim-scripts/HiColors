@@ -1,7 +1,7 @@
 " hicolors.vim:
 "   Author:	Charles E. Campbell, Jr.
-"   Date:	Oct 20, 2004
-"   Version:	4
+"   Date:	Mar 31, 2005
+"   Version:	5d	NOT RELEASED
 "  Usage:  :he hicolors
 " =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
 " GetLatestVimScripts: 1081 1 :AutoInstall: hicolors.vim
@@ -15,7 +15,7 @@
 if &cp || exists("g:loaded_syntax_hicolors")
  finish
 endif
-let g:loaded_syntax_hicolors= "v4"
+let g:loaded_syntax_hicolors= "v5d"
 
 " ---------------------------------------------------------------------
 "  HighlightColors: {{{1
@@ -44,7 +44,7 @@ fun! s:HighlightColors()
 
   " set up syntax highlighting for listed groups.
   " Assumes that all colornames begin with a capital letter.
-  while search('\<[A-Z]','W')
+  while search('\<\%(\a\)','W') && line(".") < line("$")-4
    let color= expand("<cword>")
 "   call Decho("color<".color.">")
    if s:HLTest(color)
@@ -82,9 +82,19 @@ fun! s:HLTest(hlname)
   endif
   let fg_hlname= synIDattr(id_trans,"fg")
   let bg_hlname= synIDattr(id_trans,"bg")
-  if fg_hlname == "" && bg_hlname == ""
-"   call Dret("HLTest 0 : fg_hlname<".fg_hlname."> bg_hlname<".bg_hlname.">")
-   return 0
+  let rvs      = synIDattr(id_trans,"reverse")
+  let ul       = synIDattr(id_trans,"underline")
+  let uc       = synIDattr(id_trans,"undercurl")
+  let bold     = synIDattr(id_trans,"bold")
+  if fg_hlname == "" && bg_hlname == "" && rvs == "" && ul == "" && uc == "" && bold == ""
+"   call Decho("fg_hlname<".fg_hlname."> bg_hlname<".bg_hlname."> rvs=".rvs." ul=".ul." uc=".uc." bold=".bold)
+   " OK, looks like its not a highlighting group.  One last test...
+   try
+   	exe "silent hi ".a:hlname
+   catch /^Vim\%((\a\+)\)\=:E/
+"    call Decho("HLTest 0 : ".a:hlname." not a highlighting group")
+    return 0
+   endtry
   endif
 "   call Dret("HLTest 1")
   return 1

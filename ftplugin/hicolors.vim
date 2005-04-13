@@ -1,20 +1,23 @@
 " hicolors.vim : colorscheme editor
 "   ***		This file is intended to go into .vim/ftplugin/
 "  Author:	Charles E. Campbell, Jr.
-"  Date:	Oct 20, 2004
-"  Version:	4
+"  Date:	Apr 13, 2005
+"  Version:	5
 "
-"  Explanation of Files:
+"  Explanation of Files: {{{1
 "     doc/hicolors.txt       help page
 "     syntax/hicolors.vim    hicolors.txt syntax highlighting
 "     ftplugin/hicolors.vim  provides colorscheme editor
+
+" ---------------------------------------------------------------------
+"  Load Once: {{{1
 if &cp || exists("s:loaded_ftplugin_hicolors")
  finish
 endif
-let g:loaded_ftplugin_hicolors= "v4"
+let g:loaded_ftplugin_hicolors= "v5"
 
 " ---------------------------------------------------------------------
-"  Public Interface:
+"  Public Interface: {{{1
 augroup AuHiColorTxt
  au!
  au WinEnter hicolors.txt	call <SID>HiColorTxtStart()
@@ -22,7 +25,7 @@ augroup AuHiColorTxt
 augroup END
 
 " ---------------------------------------------------------------------
-" HiColorTxtStart:
+" HiColorTxtStart: {{{1
 fun! s:HiColorTxtStart()
 "  call Dfunc("HiColorTxtStart()")
   nnoremap <silent> <leftmouse>		<leftmouse>:set lz<bar>call <SID>ColorHelp()<bar>set nolz<cr>
@@ -35,7 +38,7 @@ call s:HiColorTxtStart()
 
 
 " ---------------------------------------------------------------------
-" ChgColor:
+" ChgColor: {{{1
 fun! s:ChgColor()
 "  call Dfunc("ChgColor() cursorword<".expand("<cword>").">")
   augroup AuHiColorTxt
@@ -65,7 +68,7 @@ fun! s:ChgColor()
 endfun
 
 " ---------------------------------------------------------------------
-" DisplayColorLevel: allows one to change the foreground/background
+" DisplayColorLevel: allows one to change the foreground/background {{{1
 " and attributes (bold, underline, reverse, inverse, italic, standout)
 fun! s:DisplayColorLevel(color)
 "  call Dfunc("DisplayColorLevel(color<".a:color.">)")
@@ -77,7 +80,7 @@ fun! s:DisplayColorLevel(color)
   endif
 
   " set up local highlighting
-  hi hiNormal gui=NONE cterm=NONE ctermfg=white ctermbg=black guifg=white guibg=black
+  hi hiLocalColor gui=NONE cterm=NONE ctermfg=white ctermbg=black guifg=white guibg=black
   exe "syn match hi".a:color.' "'.a:color.'"'
   exe "hi link hi".a:color." ".a:color
   syn match hiDCLred		"Red  \[.*]"	contains=hiBarRed01,hiBarRed
@@ -252,12 +255,12 @@ fun! s:DisplayColorLevel(color)
   hi hiBarGreen ctermfg=green ctermbg=black guifg=green guibg=black
   hi hiBarBlue  ctermfg=blue  ctermbg=black guifg=blue  guibg=black
 
-  hi link hiDCLred		hiNormal
-  hi link hiDCLgreen	hiNormal
-  hi link hiDCLblue 	hiNormal
-  hi link hiDCLfg		hiNormal
-  hi link hiDCLbg		hiNormal
-  hi link hiDCLword		hiNormal
+  hi link hiDCLred		hiLocalColor
+  hi link hiDCLgreen	hiLocalColor
+  hi link hiDCLblue 	hiLocalColor
+  hi link hiDCLfg		hiLocalColor
+  hi link hiDCLbg		hiLocalColor
+  hi link hiDCLword		hiLocalColor
 
   exe "put ='".a:color."'"
   1d
@@ -276,6 +279,39 @@ fun! s:DisplayColorLevel(color)
   let s:keep_isital = s:isital
   let s:keep_isrvrs = s:isrvrs
   let s:keep_isundr = s:isundr
+
+  " if foreground/background color not explicitly set,
+  " use the setting of the background option (dark vs light).
+  if s:fg == ""
+   if &bg == "dark"
+    if has("gui_running")
+     let s:fg="#ffffff"
+	else
+     let s:fg= &t_Co - 1
+	endif
+   else
+    if has("gui_running")
+   	 let s:fg="#000000"
+	else
+   	 let s:fg=0
+	endif
+   endif
+  endif
+  if s:bg == ""
+   if &bg == "dark"
+    if has("gui_running")
+   	 let s:bg="#000000"
+	else
+   	 let s:bg=0
+	endif
+   else
+    if has("gui_running")
+   	 let s:bg="#ffffff"
+	else
+   	 let s:bg= &t_Co - 1
+	endif
+   endif
+  endif
 "  call Decho("keeping attributes: bold=".s:isbold." ital=".s:isital." rvrs=".s:isrvrs." undr=".s:isundr)
 "  call Decho("colorid=".colorid."  fg=".s:fg."  bg=".s:bg)
 
@@ -322,10 +358,10 @@ fun! s:DisplayColorLevel(color)
     let s:keep_fg    = s:fg + 1
     let s:keep_bg    = s:bg + 1
    endif
-   let boldline = "                             ".(s:isbold? "+" : "-")."Bold"
+   let boldline = "                              ".(s:isbold? "+" : "-")."Bold"
    let fgbar    = "  Foregnd[".s:ColorBar(0,s:fg)."]  ".(s:isital? "+" : "-")."Italic"
    let bgbar    = "  Backgnd[".s:ColorBar(0,s:bg)."]  ".(s:isrvrs? "+" : "-")."Reverse"
-   let undrline = "                             ".(s:isundr? "+" : "-")."Underline"
+   let undrline = "                              ".(s:isundr? "+" : "-")."Underline"
    exe "put ='".boldline."'"
    exe "put ='".fgbar."'"
    exe "put ='".bgbar."'"
@@ -338,7 +374,7 @@ fun! s:DisplayColorLevel(color)
 endfun
 
 " ---------------------------------------------------------------------
-" HandleLeftMouse:
+" HandleLeftMouse: {{{1
 fun! s:HandleLeftMouse(set_keepline,color)
 "  call Dfunc("HandleLeftMouse(set_keepline=".a:set_keepline." color<".a:color.">)")
 
@@ -393,17 +429,17 @@ fun! s:HandleLeftMouse(set_keepline,color)
    norm! $F-r+
    call s:SetColor()
 
-  elseif has("gui_running") &&
-   	 \ (3 <= curline && curline <= 5) &&
-   	 \ ((10 < curcol && curcol < 27) || (30 < curcol && curcol < 47))
-   " Gui colorbar
-   norm! F[ldt]
-   let leftcol= col(".")
-   exe "norm i".s:ColorBar(0,curcol - leftcol)."\<esc>0"
-   set nomod
-   call s:SetColor()
+  elseif has("gui_running")
+   if (3 <= curline && curline <= 5) && ((10 < curcol && curcol < 27) || (30 < curcol && curcol < 47))
+    " Gui colorbar
+    norm! F[ldt]
+    let leftcol= col(".")
+    exe "norm i".s:ColorBar(0,curcol - leftcol)."\<esc>0"
+    set nomod
+    call s:SetColor()
+   endif
 
-  elseif (3 <= curline && curline <= 4) && (10 < curcol && curcol < 27)
+  elseif 3 <= curline && curline <= 4 && 10 < curcol && curcol < 28
    " console colorbar
    norm! F[ldt]
    let leftcol= col(".")
@@ -416,7 +452,7 @@ fun! s:HandleLeftMouse(set_keepline,color)
 endfun
 
 " ---------------------------------------------------------------------
-" ColorBar:
+" ColorBar: {{{1
 fun! s:ColorBar(ishex,intensity)
 "  call Dfunc("ColorBar(ishex=".a:ishex." intensity=".a:intensity.")")
   let intensity= 0
@@ -461,7 +497,12 @@ fun! s:ColorBar(ishex,intensity)
   endwhile
   let i   = i + 1
   let bar = bar.":"
-  while i < 16
+  if has("gui_running")
+   let imax=16
+  else
+   let imax=17
+  endif
+  while i < imax
    let bar = bar." "
    let i   = i + 1
   endwhile
@@ -528,7 +569,7 @@ fun! s:ColorBar(ishex,intensity)
 endfun
 
 " ---------------------------------------------------------------------
-" SetColor: sets highlighting color
+" SetColor: sets highlighting color {{{1
 "   Uses s:colorname
 "   red   : rfg rbg
 "   green : gfg gbg
@@ -577,7 +618,7 @@ fun! s:SetColor()
 endfun
 
 " ---------------------------------------------------------------------
-" Nr2Hex: The function Nr2Hex() returns the Hex string of a number.
+" Nr2Hex: The function Nr2Hex() returns the Hex string of a number. {{{1
 fun! s:Nr2Hex(nr)
 "  call Dfunc("Nr2Hex(nr=".a:nr.")")
   let n = a:nr
@@ -597,7 +638,7 @@ fun! s:Nr2Hex(nr)
 endfun
 
 " ---------------------------------------------------------------------
-" WriteColorscheme: modified version of Travis Hume's Mkcolorscheme
+" WriteColorscheme: modified version of Travis Hume's Mkcolorscheme {{{1
 fun! s:WriteColorscheme()
 "  call Dfunc("WriteColorscheme()")
 
@@ -653,7 +694,7 @@ fun! s:WriteColorscheme()
 endfun
 
 " ---------------------------------------------------------------------
-" Cancel:
+" Cancel: {{{1
 fun! s:Cancel()
 "  call Dfunc("Cancel()")
   let s:isbold = s:keep_isbold
@@ -720,7 +761,7 @@ fun! s:Cancel()
 endfun
 
 " ---------------------------------------------------------------------
-" Done:
+" Done: {{{1
 fun! s:Done()
 "  call Dfunc("Done()")
   set nomod
@@ -743,7 +784,7 @@ fun! s:Done()
 endfun
 
 " ---------------------------------------------------------------------
-" GuiColorSpecs: get color specs for gui=... and cterm=... .
+" GuiColorSpecs: get color specs for gui=... and cterm=... . {{{1
 "   If gui_running, then cterm specs are used to keep console specifications
 "   in the colorscheme.
 "   Otherwise, then gui specs are used to keep gui specifications in
@@ -768,24 +809,29 @@ fun! s:GetColorSpecs(color)
 endfun
 
 " ---------------------------------------------------------------------
-" s:ColorHelp: brings up a help entry (if one's present) on the given
+" s:ColorHelp: brings up a help entry (if one's present) on the given {{{1
 " colorname
 fun! s:ColorHelp()
 "  call Dfunc("ColorHelp()")
-  let color   = expand("<cword>")
+  let color= expand("<cword>")
   echo " "
-  let v:errmsg= ""
-  exe "silent! help hl-".color
-  if v:errmsg != ""
-    he group-name
-	if search('^\s\+\*\='.color,'W') != 0
-	 exe "norm! z\<cr>"
-	else
-     echomsg "no help available for <".color.">"
-	endif
+
+  if color == "lCursor"
+   he guicursor
+  else
+   let v:errmsg= ""
+   exe "silent! help hl-".color
+   if v:errmsg != "" && v:errmsg !~ '^E490:'
+     he group-name
+ 	if search('^\s\+\*\='.color,'W') != 0
+ 	 exe "norm! z\<cr>"
+ 	else
+      echomsg "no help available for <".color.">"
+ 	endif
+   endif
   endif
 "  call Dret("ColorHelp")
 endfun
 
 " ---------------------------------------------------------------------
-" vim: ts=4
+" vim: ts=4 fdm=marker
