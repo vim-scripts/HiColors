@@ -14,6 +14,7 @@ Debug           Identifier      Red             Title           WildMenu
 Delimiter       Ignore          Scrollbar       Todo            Yellow
 DiffAdd         IncSearch
 
-    leftmouse : help for given colorname if any is available
-                use ctrl-o to return
-    rightmouse: brings up the color editor
+    leftmouse,?    : help for given colorname if any is available
+                     use ctrl-o to return
+    rightmouse,<cr>: brings up the color editor
+    see |hicolorshelp| for help with hicolors itself

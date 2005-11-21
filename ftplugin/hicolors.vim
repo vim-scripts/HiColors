@@ -1,8 +1,8 @@
 " hicolors.vim : colorscheme editor
 "   ***		This file is intended to go into .vim/ftplugin/
 "  Author:	Charles E. Campbell, Jr.
-"  Date:	Apr 13, 2005
-"  Version:	5
+"  Date:	Nov 21, 2005
+"  Version:	6
 "
 "  Explanation of Files: {{{1
 "     doc/hicolors.txt       help page
@@ -14,7 +14,7 @@
 if &cp || exists("s:loaded_ftplugin_hicolors")
  finish
 endif
-let g:loaded_ftplugin_hicolors= "v5"
+let g:loaded_ftplugin_hicolors= "v6"
 
 " ---------------------------------------------------------------------
 "  Public Interface: {{{1
@@ -30,12 +30,12 @@ fun! s:HiColorTxtStart()
 "  call Dfunc("HiColorTxtStart()")
   nnoremap <silent> <leftmouse>		<leftmouse>:set lz<bar>call <SID>ColorHelp()<bar>set nolz<cr>
   nnoremap <silent> <rightmouse>	<leftmouse>:set lz<bar>call <SID>ChgColor()<bar>set nolz<cr>
+  nnoremap <silent> ?				:set lz<bar>call <SID>ColorHelp()<bar>set nolz<cr>
   nnoremap <silent> <cr>			:set lz<bar>call <SID>ChgColor()<bar>set nolz<cr>
 "  call Dret("HiColorTxtStart")
 endfun
 "let g:decho_bufenter= 1  "Decho
 call s:HiColorTxtStart()
-
 
 " ---------------------------------------------------------------------
 " ChgColor: {{{1
@@ -48,6 +48,10 @@ fun! s:ChgColor()
   exe "nnoremap <silent> <leftmouse> <leftmouse>:call <SID>HandleLeftMouse(1,'".color."')<cr>"
   exe "nnoremap <silent> <cr>        :call <SID>HandleLeftMouse(1,'".color."')<cr>"
   exe "nnoremap <silent> <leftdrag>  <leftmouse>:call <SID>HandleLeftMouse(0,'".color."')<cr>"
+  exe "nnoremap <silent> +           0f:l:call <SID>HandleLeftMouse(1,'".color."')<cr>"
+  exe "nnoremap <silent> -           0f:h:call <SID>HandleLeftMouse(1,'".color."')<cr>"
+  exe "nnoremap <silent> >           02f:l:call <SID>HandleLeftMouse(1,'".color."')<cr>"
+  exe "nnoremap <silent> <           02f:h:call <SID>HandleLeftMouse(1,'".color."')<cr>"
   let listline = line(".")
   let listcol  = col(".")
   let listwin  = winnr()
@@ -765,7 +769,8 @@ endfun
 fun! s:Done()
 "  call Dfunc("Done()")
   set nomod
-  nnoremap <leftmouse> <leftmouse>:call <SID>ChgColor()<cr>
+  	
+  nnoremap <silent> <leftmouse>	  <leftmouse>:set lz<bar>call <SID>ColorHelp()<bar>set nolz<cr>
   nnoremap <silent> <cr>		  :set lz<bar>call <SID>ChgColor()<bar>set nolz<cr>
   unmap <leftdrag>
   if has("gui_running")

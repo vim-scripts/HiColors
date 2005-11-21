@@ -1,7 +1,7 @@
 " hicolors.vim:
 "   Author:	Charles E. Campbell, Jr.
-"   Date:	Mar 31, 2005
-"   Version:	5d	NOT RELEASED
+"   Date:	Jul 12, 2005
+"   Version:	6a	ASTRO-ONLY
 "  Usage:  :he hicolors
 " =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
 " GetLatestVimScripts: 1081 1 :AutoInstall: hicolors.vim
@@ -15,7 +15,7 @@
 if &cp || exists("g:loaded_syntax_hicolors")
  finish
 endif
-let g:loaded_syntax_hicolors= "v5d"
+let g:loaded_syntax_hicolors= "v6a"
 
 " ---------------------------------------------------------------------
 "  HighlightColors: {{{1
