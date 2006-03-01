@@ -1,8 +1,8 @@
 " hicolors.vim : colorscheme editor
 "   ***		This file is intended to go into .vim/ftplugin/
 "  Author:	Charles E. Campbell, Jr.
-"  Date:	Nov 21, 2005
-"  Version:	6
+"  Date:	Mar 01, 2006
+"  Version:	7
 "
 "  Explanation of Files: {{{1
 "     doc/hicolors.txt       help page
@@ -14,22 +14,23 @@
 if &cp || exists("s:loaded_ftplugin_hicolors")
  finish
 endif
-let g:loaded_ftplugin_hicolors= "v6"
+let g:loaded_ftplugin_hicolors= "v7"
 
 " ---------------------------------------------------------------------
 "  Public Interface: {{{1
 augroup AuHiColorTxt
  au!
  au WinEnter hicolors.txt	call <SID>HiColorTxtStart()
- au WinLeave hicolors.txt	silent! unmap <cr>|silent! unmap <leftmouse>|silent! unmap <rightmouse>|silent! unmap <leftdrag>
+ au WinLeave hicolors.txt	silent! unmap <cr>|silent! unmap <LeftMouse>|silent! unmap <RightMouse>|silent! unmap <LeftDrag>
 augroup END
+"DechoTabOn
 
 " ---------------------------------------------------------------------
 " HiColorTxtStart: {{{1
 fun! s:HiColorTxtStart()
 "  call Dfunc("HiColorTxtStart()")
-  nnoremap <silent> <leftmouse>		<leftmouse>:set lz<bar>call <SID>ColorHelp()<bar>set nolz<cr>
-  nnoremap <silent> <rightmouse>	<leftmouse>:set lz<bar>call <SID>ChgColor()<bar>set nolz<cr>
+  nnoremap <silent> <LeftMouse>		<LeftMouse>:set lz<bar>call <SID>ColorHelp()<bar>set nolz<cr>
+  nnoremap <silent> <RightMouse>	<LeftMouse>:set lz<bar>call <SID>ChgColor()<bar>set nolz<cr>
   nnoremap <silent> ?				:set lz<bar>call <SID>ColorHelp()<bar>set nolz<cr>
   nnoremap <silent> <cr>			:set lz<bar>call <SID>ChgColor()<bar>set nolz<cr>
 "  call Dret("HiColorTxtStart")
@@ -44,7 +45,11 @@ fun! s:ChgColor()
   augroup AuHiColorTxt
    au!
   augroup END
-  let color   = expand("<cword>")
+  if exists("s:chgcolorwin") && s:chgcolorwin
+   exe s:chgcolorwin."wincmd w"
+   call s:Done()
+  endif
+  let color= expand("<cword>")
   exe "nnoremap <silent> <leftmouse> <leftmouse>:call <SID>HandleLeftMouse(1,'".color."')<cr>"
   exe "nnoremap <silent> <cr>        :call <SID>HandleLeftMouse(1,'".color."')<cr>"
   exe "nnoremap <silent> <leftdrag>  <leftmouse>:call <SID>HandleLeftMouse(0,'".color."')<cr>"
@@ -55,15 +60,21 @@ fun! s:ChgColor()
   let listline = line(".")
   let listcol  = col(".")
   let listwin  = winnr()
+  " create a new window/buffer
   bot 7new
   let chgwin   = winnr()
+  let s:chgcolorwin = winnr()
   exe listwin."wincmd w"
   3
   norm! H
   call cursor(listline,listcol)
   exe chgwin."wincmd w"
 
-  call s:DisplayColorLevel(color)
+  if v:version >= 700 && exists("&t_Co") && &t_Co == 256
+   call s:DisplayColorChart(color)
+  else
+   call s:DisplayColorLevel(color)
+  endif
   set nomod
   " standard starting place for cursor
   2
@@ -79,6 +90,7 @@ fun! s:DisplayColorLevel(color)
 
   " change buffer name to [colorname]
   exe "file [".a:color."]"
+"  call Decho("change buffer name to <".a:color.">")
   if expand("#") == ""
    exe bufnr("#")."bwipe!"
   endif
@@ -149,7 +161,7 @@ fun! s:DisplayColorLevel(color)
 
   syn match hiDCLfg			"Foregnd\[.*]"
   syn match hiDCLbg			"Backgnd\[.*]"
-  syn match hiDCLword		"[-+]\(Bold\|Italic\|Reverse\|Underline\|WriteColorscheme\|Cancel\|Done\)"
+  syn match hiDCLword		"\%([-+]\%(Bold\|Italic\|Reverse\|Underline\)\)\|WriteColorscheme\|Cancel\|Done"
 
   if has("gui_running")
    hi hiBarRed01   gui=NONE guifg=#000000 guibg=NONE
@@ -270,11 +282,155 @@ fun! s:DisplayColorLevel(color)
   1d
   redraw!
 
+  call s:SetColorVars(a:color)
+
+  if has("gui_running")
+   let s:rfg    = substitute(s:fg,'^.\(..\)....','\1','')
+   let s:rbg    = substitute(s:bg,'^.\(..\)....','\1','')
+   let s:gfg    = substitute(s:fg,'^...\(..\)..','\1','')
+   let s:gbg    = substitute(s:bg,'^...\(..\)..','\1','')
+   let s:bfg    = substitute(s:fg,'^.....\(..\)','\1','')
+   let s:bbg    = substitute(s:bg,'^.....\(..\)','\1','')
+   if s:fg == ""
+   	let s:rfg= "00"
+   	let s:gfg= "00"
+   	let s:bfg= "00"
+   endif
+   if s:bg == ""
+   	let s:rbg= "00"
+   	let s:gbg= "00"
+   	let s:bbg= "00"
+   endif
+   if !exists("s:keep_rfg")
+"   	call Decho("keeping current colors: fg=".s:rfg.s:gfg.s:bfg." bg=".s:rbg.s:gbg.s:bbg)
+    let s:keep_rfg    = s:rfg
+    let s:keep_gfg    = s:gfg
+    let s:keep_bfg    = s:bfg
+    let s:keep_rbg    = s:rbg
+    let s:keep_gbg    = s:gbg
+    let s:keep_bbg    = s:bbg
+   endif
+   let subtitle = "         Foreground          Background          ".(s:isbold? "+" : "-")."Bold"      
+   let redbar   = "    Red  [".s:ColorBar(1,s:rfg)."]  [".s:ColorBar(1,s:rbg)."]  ".(s:isital? "+" : "-")."Italic"    
+   let greenbar = "  Green  [".s:ColorBar(1,s:gfg)."]  [".s:ColorBar(1,s:gbg)."]  ".(s:isrvrs? "+" : "-")."Reverse"   
+   let bluebar  = "   Blue  [".s:ColorBar(1,s:bfg)."]  [".s:ColorBar(1,s:bbg)."]  ".(s:isundr? "+" : "-")."Underline" 
+   exe "put ='".subtitle."'"
+   exe "put ='".redbar."'"
+   exe "put ='".greenbar."'"
+   exe "put ='".bluebar."'"
+   put =''
+   put ='         WriteColorscheme  Cancel  Done'
+   set nomod
+  else
+   if !exists("s:keep_fg")
+"   	call Decho("keeping current colors: fg=".s:fg." bg=".s:bg)
+    let s:keep_fg    = s:fg + 1
+    let s:keep_bg    = s:bg + 1
+   endif
+   let boldline = "                              ".(s:isbold? "+" : "-")."Bold"
+   let fgbar    = "  Foregnd[".s:ColorBar(0,s:fg)."]  ".(s:isital? "+" : "-")."Italic"
+   let bgbar    = "  Backgnd[".s:ColorBar(0,s:bg)."]  ".(s:isrvrs? "+" : "-")."Reverse"
+   let undrline = "                              ".(s:isundr? "+" : "-")."Underline"
+   exe "put ='".boldline."'"
+   exe "put ='".fgbar."'"
+   exe "put ='".bgbar."'"
+   exe "put ='".undrline."'"
+   put =''
+   put ='         WriteColorscheme  Cancel  Done'
+   set nomod
+  endif
+"  call Dret("DisplayColorLevel")
+endfun
+
+" ---------------------------------------------------------------------
+" DisplayColorChart: used for initializing a 256-color selection display {{{1
+fun! s:DisplayColorChart(color)
+"  call Dfunc("DisplayColorChart(color<".a:color.">)")
+
+  " change buffer name to [colorname]
+"  call Decho("0: bufname<".bufname("%").">")
+  exe 'silent file \['.a:color.'\]'
+"  call Decho("change buffer name to <".a:color.">")
+  if expand("#") == ""
+   exe bufnr("#")."bwipe!"
+  endif
+"  call Decho("1: bufname<".bufname("%").">")
+
+  " set up local highlighting
+  hi hiLocalColor gui=NONE cterm=NONE ctermfg=white ctermbg=black guifg=white guibg=black
+  exe "syn match hi".a:color.' "'.a:color.'"'
+  exe "hi link hi".a:color." ".a:color
+  syn match hiDCLfg			"Foregnd"
+  syn match hiDCLbg			"Backgnd"
+  syn match hiDCLword		"\%([-+]\%(Bold\|Italic\|Reverse\|Underline\)\)\|WriteColorscheme\|Cancel\|Done"
+  hi link hiDCLfg       hiLocalColor
+  hi link hiDCLbg       hiLocalColor
+  hi link hiDCLword		hiLocalColor
+"  call Decho("2: bufname<".bufname("%").">")
+
+  let i= 0
+  while i < 256
+   let padi   = printf("%03d",i  )
+   let padip1 = printf("%03d",i+1)
+  
+   exe 'syn match hiBar'.padi.' "-" contained skipwhite nextgroup=hiBar'.padip1
+   exe 'hi hiBar'.padi.' ctermfg='.i.' ctermbg='.i
+   let i= i + 1
+  endwhile
+"  call Decho("3: bufname<".bufname("%").">")
+  
+  syn match hiBarStop ':'
+  syn match hiBar000 '^\%2l\s*\zs-' nextgroup=hiBar001
+  syn match hiBar232 '^\%3l\s*\zs-' nextgroup=hiBar233
+  syn match hiBar016 '^\%4l\s*\zs-' nextgroup=hiBar017
+  syn match hiBar052 '^\%5l\s*\zs-' nextgroup=hiBar053
+  syn match hiBar088 '^\%6l\s*\zs-' nextgroup=hiBar089
+  syn match hiBar124 '^\%7l\s*\zs-' nextgroup=hiBar125
+  syn match hiBar160 '^\%8l\s*\zs-' nextgroup=hiBar161
+  syn match hiBar196 '^\%9l\s*\zs-' nextgroup=hiBar197
+"  call Decho("4: bufname<".bufname("%").">")
+  3wincmd +
+"  call Decho("5: bufname<".bufname("%").">")
+
+  exe "put ='".a:color."'"
+  1d
+"  call Decho("6: bufname<".bufname("%").">")
+
+  call s:SetColorVars(a:color)
+"  call Decho("7: bufname<".bufname("%").">")
+  if !exists("s:keep_fg")
+"   call Decho("keeping current colors: fg=".s:fg." bg=".s:bg)
+   let s:keep_fg = s:fg
+   let s:keep_bg = s:bg
+  endif
+  let s:isfg= 1
+
+  put ='               ----------------'
+  put ='           ------------------------'
+  put ='------  ------  ------  ------  ------  ------  : '.(s:isfg?   'Foregnd' : 'Backgnd')
+  put ='------  ------  ------  ------  ------  ------  : '.(s:isbold? '+' : '-').'Bold'      
+  put ='------  ------  ------  ------  ------  ------  : '.(s:isital? '+' : '-').'Italic'    
+  put ='------  ------  ------  ------  ------  ------  : '.(s:isrvrs? '+' : '-').'Reverse'   
+  put ='------  ------  ------  ------  ------  ------  : '.(s:isundr? '+' : '-').'Underline' 
+  put ='------  ------  ------  ------  ------  ------'
+  put ='       WriteColorscheme  Cancel  Done'
+  redraw!
+
+"  call Dret("DisplayColorChart")
+endfun
+
+" ---------------------------------------------------------------------
+" SetColorVars: interprets various color display parameters into script-local {{{2
+"               variables
+fun! s:SetColorVars(color)
+"  call Dfunc("SetColorVars(color<".a:color.">)")
+
   " get current selected highlighting name's color and attributes
   let s:colorname   = a:color
   let colorid       = synIDtrans(synID(1,1,1))
   let s:fg          = synIDattr(colorid,"fg#")
   let s:bg          = synIDattr(colorid,"bg#")
+"  call Decho("win#".winnr()."<".bufname("%")."> [".line(".").",".col(".")."] colorid=".colorid." fg=".s:fg." bg=".s:bg)
   let s:isbold      = synIDattr(colorid,"bold")
   let s:isital      = synIDattr(colorid,"italic")
   let s:isrvrs      = synIDattr(colorid,"reverse")
@@ -317,64 +473,8 @@ fun! s:DisplayColorLevel(color)
    endif
   endif
 "  call Decho("keeping attributes: bold=".s:isbold." ital=".s:isital." rvrs=".s:isrvrs." undr=".s:isundr)
-"  call Decho("colorid=".colorid."  fg=".s:fg."  bg=".s:bg)
-
-  if has("gui_running")
-   let s:rfg    = substitute(s:fg,'^.\(..\)....','\1','')
-   let s:rbg    = substitute(s:bg,'^.\(..\)....','\1','')
-   let s:gfg    = substitute(s:fg,'^...\(..\)..','\1','')
-   let s:gbg    = substitute(s:bg,'^...\(..\)..','\1','')
-   let s:bfg    = substitute(s:fg,'^.....\(..\)','\1','')
-   let s:bbg    = substitute(s:bg,'^.....\(..\)','\1','')
-   if s:fg == ""
-   	let s:rfg= "00"
-   	let s:gfg= "00"
-   	let s:bfg= "00"
-   endif
-   if s:bg == ""
-   	let s:rbg= "00"
-   	let s:gbg= "00"
-   	let s:bbg= "00"
-   endif
-   if !exists("s:keep_rfg")
-"   	call Decho("keeping current colors: fg=".s:rfg.s:gfg.s:bfg." bg=".s:rbg.s:gbg.s:bbg)
-    let s:keep_rfg    = s:rfg
-    let s:keep_gfg    = s:gfg
-    let s:keep_bfg    = s:bfg
-    let s:keep_rbg    = s:rbg
-    let s:keep_gbg    = s:gbg
-    let s:keep_bbg    = s:bbg
-   endif
-   let subtitle = "         Foreground          Background          ".(s:isbold? "+" : "-")."Bold"
-   let redbar   = "    Red  [".s:ColorBar(1,s:rfg)."]  [".s:ColorBar(1,s:rbg)."]  ".(s:isital? "+" : "-")."Italic"
-   let greenbar = "  Green  [".s:ColorBar(1,s:gfg)."]  [".s:ColorBar(1,s:gbg)."]  ".(s:isrvrs? "+" : "-")."Reverse"
-   let bluebar  = "   Blue  [".s:ColorBar(1,s:bfg)."]  [".s:ColorBar(1,s:bbg)."]  ".(s:isundr? "+" : "-")."Underline"
-   exe "put ='".subtitle."'"
-   exe "put ='".redbar."'"
-   exe "put ='".greenbar."'"
-   exe "put ='".bluebar."'"
-   put =''
-   put ='         WriteColorscheme  Cancel  Done'
-   set nomod
-  else
-   if !exists("s:keep_fg")
-"   	call Decho("keeping current colors: fg=".s:fg."bg=".s:bg)
-    let s:keep_fg    = s:fg + 1
-    let s:keep_bg    = s:bg + 1
-   endif
-   let boldline = "                              ".(s:isbold? "+" : "-")."Bold"
-   let fgbar    = "  Foregnd[".s:ColorBar(0,s:fg)."]  ".(s:isital? "+" : "-")."Italic"
-   let bgbar    = "  Backgnd[".s:ColorBar(0,s:bg)."]  ".(s:isrvrs? "+" : "-")."Reverse"
-   let undrline = "                              ".(s:isundr? "+" : "-")."Underline"
-   exe "put ='".boldline."'"
-   exe "put ='".fgbar."'"
-   exe "put ='".bgbar."'"
-   exe "put ='".undrline."'"
-   put =''
-   put ='         WriteColorscheme  Cancel  Done'
-   set nomod
-  endif
-"  call Dret("DisplayColorLevel")
+"  call Decho("colorid=".colorid."  fg=".s:fg."  bg=".s:bg."  winnr=".winnr())
+"  call Dret("SetColorVars")
 endfun
 
 " ---------------------------------------------------------------------
@@ -400,6 +500,14 @@ fun! s:HandleLeftMouse(set_keepline,color)
    call s:Cancel()
   elseif curword == "Done" && a:set_keepline
    call s:Done()
+  elseif curword == "Foregnd" && exists("s:isfg") && a:set_keepline
+   let s:isfg= 0
+   s/Foregnd/Backgnd/
+"   call Decho("changing Foregnd -> Backgnd and s:isfg=".s:isfg)
+  elseif curword == "Backgnd" && exists("s:isfg") && a:set_keepline
+   let s:isfg= 1
+   s/Backgnd/Foregnd/
+"   call Decho("changing Backgnd -> Foregnd and s:isfg=".s:isfg)
   elseif curword == "+Bold" && a:set_keepline
    let s:isbold= 0
    norm! $F+r-
@@ -440,6 +548,21 @@ fun! s:HandleLeftMouse(set_keepline,color)
     let leftcol= col(".")
     exe "norm i".s:ColorBar(0,curcol - leftcol)."\<esc>0"
     set nomod
+    call s:SetColor()
+   endif
+
+  elseif exists("&t_Co") && &t_Co == 256 && exists("s:isfg")
+   " 256-color xterm left-mouse support
+   let higroup= synIDattr(synID(line("."),col("."),1),"name")
+"   call Decho("higroup<".higroup."> [".line(".").",".col(".")."] isfg=".s:isfg)
+   if higroup =~ '^hiBar\d\+$'
+   	let colornum= substitute(higroup,'^hiBar0*','','')
+"	call Decho("colornum=".colornum)
+	if s:isfg == 1
+	 let s:fg= colornum
+	else
+	 let s:bg= colornum
+	endif
     call s:SetColor()
    endif
 
@@ -514,7 +637,11 @@ fun! s:ColorBar(ishex,intensity)
   " map current line,column,intensity to (red/green/blue) foreground/background
   let curline = line(".")
   let curcol  = col(".")
+
   if has("gui_running")
+   " -------------
+   " GUI ColorBar:
+   " -------------
 
    " convert 0..15 intensity to 0..255 intensity for gui
    let intensity = 16*intensity + 8
@@ -557,7 +684,9 @@ fun! s:ColorBar(ishex,intensity)
    endif
 
   else
-   " console vim
+   " -----------------
+   " Console ColorBar:
+   " -----------------
    let curline   = line(".")
    let curcol    = col(".")
    if     curline == 3
@@ -664,6 +793,9 @@ fun! s:WriteColorscheme()
   silent! %s/ xxx / /
   silent! %s/^/hi /
   silent! g/\<hiBar\(Red\|Green\|Blue\)\>/d
+  silent! g/hiLocalColor/d
+  silent! g/\<hiBar\d\+/d
+  silent! g/\<cleared\>/d
 
   " get new colorscheme name
   let newschemename= substitute(input("Enter new colorscheme name: "),'\.vim$','','e')
@@ -745,6 +877,13 @@ fun! s:Cancel()
    let s:rbg    = s:keep_rbg
    let s:gbg    = s:keep_gbg
    let s:bbg    = s:keep_bbg
+
+  elseif v:version >= 700 && exists("&t_Co") && &t_Co == 256
+   " 256-color console
+   let s:fg= s:keep_fg
+   let s:bg= s:keep_bg
+"   call Decho("restore fg#".s:fg." bg#".s:bg)
+
   else
    " console
    let s:fg= s:keep_fg
@@ -773,6 +912,7 @@ fun! s:Done()
   nnoremap <silent> <leftmouse>	  <leftmouse>:set lz<bar>call <SID>ColorHelp()<bar>set nolz<cr>
   nnoremap <silent> <cr>		  :set lz<bar>call <SID>ChgColor()<bar>set nolz<cr>
   unmap <leftdrag>
+
   if has("gui_running")
    unlet s:keep_rfg
    unlet s:keep_bfg
@@ -784,12 +924,14 @@ fun! s:Done()
    unlet s:keep_fg
    unlet s:keep_bg
   endif
+
+  let s:chgcolorwin= 0
   close!
 "  call Dret("Done")
 endfun
 
 " ---------------------------------------------------------------------
-" GuiColorSpecs: get color specs for gui=... and cterm=... . {{{1
+" GetColorSpecs: get color specs for gui=... and cterm=... . {{{1
 "   If gui_running, then cterm specs are used to keep console specifications
 "   in the colorscheme.
 "   Otherwise, then gui specs are used to keep gui specifications in
