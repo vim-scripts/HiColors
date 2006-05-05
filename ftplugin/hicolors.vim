@@ -1,8 +1,8 @@
 " hicolors.vim : colorscheme editor
 "   ***		This file is intended to go into .vim/ftplugin/
 "  Author:	Charles E. Campbell, Jr.
-"  Date:	Mar 01, 2006
-"  Version:	7
+"  Date:	May 05, 2006
+"  Version:	8
 "
 "  Explanation of Files: {{{1
 "     doc/hicolors.txt       help page
@@ -11,17 +11,18 @@
 
 " ---------------------------------------------------------------------
 "  Load Once: {{{1
-if &cp || exists("s:loaded_ftplugin_hicolors")
+if &cp || exists("g:loaded_hicolors")
  finish
 endif
-let g:loaded_ftplugin_hicolors= "v7"
+let g:loaded_hicolors= "v8"
 
 " ---------------------------------------------------------------------
 "  Public Interface: {{{1
 augroup AuHiColorTxt
  au!
- au WinEnter hicolors.txt	call <SID>HiColorTxtStart()
+ au WinEnter hicolors.txt	call s:HiColorTxtStart()
  au WinLeave hicolors.txt	silent! unmap <cr>|silent! unmap <LeftMouse>|silent! unmap <RightMouse>|silent! unmap <LeftDrag>
+ au ColorScheme hicolors.txt call s:HiColorScheme()
 augroup END
 "DechoTabOn
 
@@ -37,6 +38,99 @@ fun! s:HiColorTxtStart()
 endfun
 "let g:decho_bufenter= 1  "Decho
 call s:HiColorTxtStart()
+
+" ---------------------------------------------------------------------
+" HiColorScheme: {{{2
+fun! s:HiColorScheme()
+"  call Dfunc("HiColorScheme()")
+  let eikeep= &ei
+  set ei=ColorScheme
+  hi link AltAltUnique Ignore
+  hi link AltConstant Ignore
+  hi link AltFunction Ignore
+  hi link AltType Ignore
+  hi link AltUnique Ignore
+  hi link Blue Ignore
+  hi link Comment Ignore
+  hi link Constant Ignore
+  hi link Cursor Ignore
+  hi link CursorColumn Ignore
+  hi link CursorLine Ignore
+  hi link Cyan Ignore
+  hi link Debug Ignore
+  hi link Delimiter Ignore
+  hi link DiffAdd Ignore
+  hi link DiffChange Ignore
+  hi link DiffDelete Ignore
+  hi link DiffText Ignore
+  hi link Directory Ignore
+  hi link Error Ignore
+  hi link ErrorMsg Ignore
+  hi link FoldColumn Ignore
+  hi link Folded Ignore
+  hi link Function Ignore
+  hi link Green Ignore
+  hi link Identifier Ignore
+  hi link IncSearch Ignore
+  hi link lCursor Ignore
+  hi link LineNr Ignore
+  hi link Magenta Ignore
+  hi link MatchParen Ignore
+  hi link Menu Ignore
+  hi link ModeMsg Ignore
+  hi link MoreMsg Ignore
+  hi link NonText Ignore
+  hi link Normal Ignore
+  hi link Pmenu Ignore
+  hi link PmenuSbar Ignore
+  hi link PmenuSel Ignore
+  hi link PmenuThumb Ignore
+  hi link PreProc Ignore
+  hi link Question Ignore
+  hi link Red Ignore
+  hi link Scrollbar Ignore
+  hi link Search Ignore
+  hi link SignColumn Ignore
+  hi link Special Ignore
+  hi link SpecialKey Ignore
+  hi link SpellBad Ignore
+  hi link SpellCap Ignore
+  hi link SpellLocal Ignore
+  hi link SpellRare Ignore
+  hi link Statement Ignore
+  hi link StatusLine Ignore
+  hi link StatusLineNC Ignore
+  hi link String Ignore
+  hi link Subtitle Ignore
+  hi link TabLine Ignore
+  hi link TabLineFill Ignore
+  hi link TabLineSel Ignore
+  hi link Tags Ignore
+  hi link Title Ignore
+  hi link Todo Ignore
+  hi link Type Ignore
+  hi link Underlined Ignore
+  hi link Unique Ignore
+  hi link User1 Ignore
+  hi link User2 Ignore
+  hi link User3 Ignore
+  hi link User4 Ignore
+  hi link User5 Ignore
+  hi link User6 Ignore
+  hi link User7 Ignore
+  hi link User8 Ignore
+  hi link User9 Ignore
+  hi link VertSplit Ignore
+  hi link Visual Ignore
+  hi link VisualNOS Ignore
+  hi link WarningMsg Ignore
+  hi link White Ignore
+  hi link WildMenu Ignore
+  hi link Yellow Ignore
+  exe "colors ".g:colors_name
+  let &ei= eikeep
+"  call Dret("HiColorScheme : colors_name<".g:colors_name.">")
+endfun
 
 " ---------------------------------------------------------------------
 " ChgColor: {{{1
